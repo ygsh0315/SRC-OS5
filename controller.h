@@ -47,6 +47,12 @@ class Controller
     //양쪽 바퀴 다른 속도 설정
     void SetSpeed(float sL, float sR);
     
+    //적과의 수평거리 반환 함수
+    float GetHD();
+
+    //적과의 수평거리 변환환
+    void SetHD(float HD);
+
     //초기상태 시 실행 함수
     void Start();
 
@@ -71,6 +77,9 @@ class Controller
 
     //적 감지 여부
     bool enemy;
+
+    //적과 벌어진 거리
+    float enemy_horizontal_distance;
 
     //위험 지역 여부
     bool isSafe;

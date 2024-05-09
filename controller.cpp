@@ -53,6 +53,16 @@ void Controller::SetEnemyState()
     enemy = !enemy;
 };
 
+float Controller::GetHD()
+{
+    return enemy_horizontal_distance;
+};
+
+void Controller::SetHD(float HD)
+{
+    enemy_horizontal_distance = HD;
+}
+
 void Controller::Start()
 {
     PwmL.period_us(66);
