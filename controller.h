@@ -2,7 +2,7 @@
 #include <string>
 #include <stdlib.h>
 #include "Thread.h"
-#define MAXSPEED 0.9
+#define MAXSPEED 0.5
 #define ESCAPESPEED -0.5
 class Controller
 {
@@ -76,7 +76,7 @@ class Controller
     RoboState robo_state;
 
     //적 감지 여부
-    bool enemy;
+    bool enemy = false;
 
     //적과 벌어진 거리
     float enemy_horizontal_distance;

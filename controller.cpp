@@ -67,7 +67,7 @@ void Controller::Start()
 {
     PwmL.period_us(66);
     PwmR.period_us(66);
-    SetEnemyState();
+    //SetEnemyState();
     SetState(RoboState::IDLE);
 };
 
