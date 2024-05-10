@@ -22,7 +22,7 @@ class Controller
     };
     //객체 생성시 실행되는 생성자 함수
     Controller();
-
+//-------------------Get & Set methods----------------------//
     //현재 로봇의 상태 반환
     RoboState GetState();
 
@@ -52,7 +52,7 @@ class Controller
 
     //적과의 수평거리 변환환
     void SetHD(float HD);
-
+//--------------------State Machine methods----------------------//
     //초기상태 시 실행 함수
     void Start();
 
@@ -70,7 +70,7 @@ class Controller
 
     //주행 함수
     void Move(float sL, float sR);
-
+//--------------------Private variables--------------------------//
     private:
     //로봇 상태
     RoboState robo_state;
