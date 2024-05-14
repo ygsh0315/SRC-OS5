@@ -2,7 +2,7 @@
 #include <string>
 #include <stdlib.h>
 #include "Thread.h"
-#define MAXSPEED 0.5
+#define MAXSPEED 0
 #define ESCAPESPEED -0.5
 class Controller
 {
@@ -33,7 +33,7 @@ class Controller
     bool GetEnemyState();
 
     //적 감지 여부 변환
-    void SetEnemyState();
+    void SetEnemyState(bool enemyState);
 
     //좌측 바퀴 속도 반환
     float GetSpeedL();
@@ -70,6 +70,8 @@ class Controller
 
     //주행 함수
     void Move(float sL, float sR);
+
+    void EnemyDetect();
 //--------------------Private variables--------------------------//
     private:
     //로봇 상태
@@ -82,7 +84,7 @@ class Controller
     float enemy_horizontal_distance;
 
     //위험 지역 여부
-    bool isSafe;
+    bool isSafe = true;
 
     //좌측 바퀴 속력
     float speedL;
