@@ -5,7 +5,11 @@
 // main() runs in its own thread in the OS
 int main()
 {
-    Controller controller;
+Controller controller;
+// wait(3000);
+// controller.SetEnemyState(true);
+// wait(3000);
+// controller.SetEnemyState(false);
  while (true) {
         controller.EnemyDetect();
         switch(controller.GetState())

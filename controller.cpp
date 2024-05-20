@@ -16,8 +16,13 @@ Serial device(D8, D2, 9600);
 bool decimalPointSeen = false; 
 // 부호 정보를 추적하기 위한 변수
 bool isNegative = false; 
+
+char distanceBuffer[32];
+
+int bufferIndex = 0;
 #pragma endregion Serial Variables
 
+DigitalOut led1(LED1);
 
 Controller::Controller()
 {
@@ -51,8 +56,26 @@ void Controller::SetSpeed(float speed)
 };
 void Controller::SetSpeed(float sL,float sR)
 {
-    speedL = sL;
-    speedR = sR;
+    float speedL_i = GetSpeedL();
+    float speedR_i = GetSpeedR();
+    int interval_L= (sL-speedL_i)/0.1f;
+    int interval_R= (sR-speedR_i)/0.1f;
+    for(int i = 0; i<=abs(interval_L); i++){
+        if(interval_L>=0){
+            speedL = speedL_i + 0.1*i;
+        }else{
+            speedL = speedL_i - 0.1*i;
+        } 
+    }
+    for(int i = 0; i<=abs(interval_R); i++){
+        if(interval_R>=0){
+            speedR = speedR_i + 0.1*i;
+        }else{
+            speedR = speedR_i - 0.1*i;
+        } 
+    }
+    // speedL = sL;
+    // speedR = sR;
 };
 
 bool Controller::GetEnemyState()
@@ -65,12 +88,12 @@ void Controller::SetEnemyState(bool enemyState)
     enemy = enemyState;
 };
 
-float Controller::GetHD()
+int Controller::GetHD()
 {
     return enemy_horizontal_distance;
 };
 
-void Controller::SetHD(float HD)
+void Controller::SetHD(int HD)
 {
     enemy_horizontal_distance = HD;
 }
@@ -95,25 +118,43 @@ void Controller::Idle()
 
 void Controller::Detect()
 {
-    if(GetEnemyState()==false)
-        {
+    if(isSafe){
+        if(GetEnemyState())
+        {            
+            SetSpeed(0);
+            SetState(RoboState::ATTACK);
+        }else if(!GetEnemyState() && GetHD()>0){
+            led1=0;
+            SetSpeed(-0.5,0.5);
+        }else if(!GetEnemyState() && GetHD()<0){
+            led1=0;
             SetSpeed(0.5,-0.5);
         }
-    else
-        {
-            SetSpeed(0);
-            SetState(RoboState::ATTACK); 
-        }
+    }else{
+        SetState(RoboState::IDLE);
+    }
 };
 
 void Controller::Attack()
 {
-    SetSpeed(MAXSPEED);
+    if(isSafe){
+        led1 = 1;
+        SetSpeed(MAXSPEED);
+        if(!GetEnemyState()){
+            SetState(RoboState::IDLE);
+        }
+    }else
+    {
+        SetState(RoboState::IDLE);
+    }
 };
 
 void Controller::Escape()
 {
     SetSpeed(ESCAPESPEED);
+    if(isSafe){
+        SetState(RoboState::IDLE);
+    }
 };
 
 void Controller::Move(float sL, float sR){
@@ -128,40 +169,47 @@ void Controller::Move(float sL, float sR){
 };
 
 void Controller:: EnemyDetect()
-{
-if (device.readable() > 0) { // device로부터 데이터를 받을 수 있는지 확인
-        char ch = device.getc(); // 데이터 한 바이트 읽기
+{  
+    if (device.readable()) {
+        char receivedChar = device.getc();
+        if(receivedChar=='*'){
+            SetEnemyState(false);
+        }else{
+            SetEnemyState(true);
+      }    
+        if(receivedChar=='/'){
+            distanceBuffer[bufferIndex] = '\0';
+            SetHD(atoi(distanceBuffer));
+            pc.printf("Received Distance: %d\n", GetHD());
+            bufferIndex = 0; // 버퍼 초기화
+        }else{
+            distanceBuffer[bufferIndex] = receivedChar;
+            bufferIndex++;
+            if (bufferIndex >= sizeof(distanceBuffer) - 1) {
+                bufferIndex = 0; // 버퍼가 가득 찬 경우 초기화
+            }
+        }
+   }
+}
         // if (ch == '-') {
-        //     isNegative = true; // 부호가 음수인 경우 표시
+        //     isNegative = true; 
+        //     if (isNegative) {
+        //     //pc.printf("-"); // 부호 정보 출력
+        // }// 부호가 음수인 경우 표시
         // } else if (ch == '.') {
         //     decimalPointSeen = true; // 소수점 발견 시, 이후의 숫자는 무시
         // } else if (ch >= '0' && ch <= '9' && !decimalPointSeen) {
         //     // 소수점 전의 숫자만 PC로 전송
         //     pc.putc(ch);
-        // } else if (ch == '/') {
-            
+        // } else if (ch == '/') {            
         //     // '/' 문자를 만나면 새로운 줄로 이동하기 위해 줄바꿈 문자 출력
-        //     if (isNegative) {
-        //         pc.printf("-"); // 부호 정보 출력
-        //     }
-        //     pc.printf("\r\n");
+        //     //pc.printf("\r\n");
         //     decimalPointSeen = false; // 소수점 발견 여부 초기화
         //     isNegative = false; // 부호 정보 초기화
         //     //continue; // '/' 문자는 무시하고 다음 데이터로 이동
         // }
-        if(ch=='*'){
-        SetEnemyState(false);
-        }else{
-            SetEnemyState(true);
-        }
-        // Raspberry Pi로 받은 데이터를 다시 보냄 (필요한 경우)
-        device.putc(ch);
-        float hd = (float)(ch);
-        SetHD(hd);
-        
-    }
-}
-// float lerp(float p1, float p2, float d1)
-// {
-// return (((1-d1) * p1) + (d1 * p2));
-// }
+        // // Raspberry Pi로 받은 데이터를 다시 보냄 (필요한 경우)
+        // device.putc(ch);
+        // float hd = (int)(ch);
+        // pc.printf("%f\r\n", hd);
+        // SetHD(hd);

@@ -2,7 +2,7 @@
 #include <string>
 #include <stdlib.h>
 #include "Thread.h"
-#define MAXSPEED 0
+#define MAXSPEED 0.5
 #define ESCAPESPEED -0.5
 class Controller
 {
@@ -48,10 +48,10 @@ class Controller
     void SetSpeed(float sL, float sR);
     
     //적과의 수평거리 반환 함수
-    float GetHD();
+    int GetHD();
 
     //적과의 수평거리 변환환
-    void SetHD(float HD);
+    void SetHD(int HD);
 //--------------------State Machine methods----------------------//
     //초기상태 시 실행 함수
     void Start();
@@ -81,7 +81,7 @@ class Controller
     bool enemy = false;
 
     //적과 벌어진 거리
-    float enemy_horizontal_distance;
+    int enemy_horizontal_distance;
 
     //위험 지역 여부
     bool isSafe = true;
